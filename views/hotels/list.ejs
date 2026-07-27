@@ -1,0 +1,25 @@
+<%- include('../partials/header', {title: 'Hotel Contracts'}) %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="section-title mb-0">Hotel Contracts</h4>
+  <% if (['Super Admin','Director','Contracting Team','Product Team'].includes(currentRole)) { %>
+    <a href="/hotels/new" class="btn btn-primary btn-sm">+ New Hotel</a>
+  <% } %>
+</div>
+
+<div class="row g-3">
+  <% hotels.forEach(function(h){ %>
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <h6 class="fw-bold mb-1"><a href="/hotels/<%= h.id %>"><%= h.name %></a></h6>
+      <p class="text-muted small mb-1"><%= h.city %>, <%= h.country %> · <%= h.category_star %>★</p>
+      <p class="small mb-0">Contact: <%= h.contact_person || '—' %> · <%= h.phone || '' %></p>
+    </div>
+  </div>
+  <% }) %>
+  <% if (hotels.length===0) { %>
+    <p class="text-muted">No hotels yet. Add one to start building contracted rates.</p>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

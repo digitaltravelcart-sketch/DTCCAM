@@ -1,0 +1,34 @@
+<%- include('../partials/header', {title: 'Leads / CRM'}) %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="section-title mb-0">Leads / CRM</h4>
+  <a href="/leads/new" class="btn btn-primary btn-sm">+ New Lead</a>
+</div>
+
+<div class="card p-3">
+<table class="table table-hover align-middle">
+  <thead>
+    <tr>
+      <th>Guest</th><th>Destination</th><th>Source</th><th>Assigned</th><th>Priority</th><th>Status</th><th>Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% leads.forEach(function(l){ %>
+    <tr>
+      <td><a href="/leads/<%= l.id %>"><%= l.guest_name %></a></td>
+      <td><%= l.destination %></td>
+      <td><%= l.source %></td>
+      <td><%= l.assigned_to ? (store.find('users', l.assigned_to) || {}).full_name : '—' %></td>
+      <td><span class="badge bg-secondary"><%= l.priority %></span></td>
+      <td><span class="badge bg-info text-dark"><%= l.status %></span></td>
+      <td><%= (l.created_at||'').slice(0,10) %></td>
+    </tr>
+    <% }) %>
+    <% if (leads.length === 0) { %>
+      <tr><td colspan="7" class="text-muted text-center py-4">No leads yet. Click "+ New Lead" to add one.</td></tr>
+    <% } %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>

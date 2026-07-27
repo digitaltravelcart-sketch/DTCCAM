@@ -1,0 +1,30 @@
+<%- include('../partials/header', {title: 'New User'}) %>
+
+<h4 class="section-title">New User</h4>
+<div class="card p-4" style="max-width:600px;">
+<form method="POST" action="/admin/users/new">
+  <div class="mb-3">
+    <label class="form-label">Full Name *</label>
+    <input class="form-control" name="full_name" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Email *</label>
+    <input class="form-control" type="email" name="email" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Temporary Password *</label>
+    <input class="form-control" name="password" required>
+    <div class="form-text">Share this with the user — they can log in immediately with it.</div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Role *</label>
+    <select class="form-select" name="role_id" required>
+      <% roles.forEach(function(r){ %><option value="<%= r.id %>"><%= r.name %></option><% }) %>
+    </select>
+  </div>
+  <button class="btn btn-primary">Create User</button>
+  <a href="/admin/users" class="btn btn-outline-secondary">Cancel</a>
+</form>
+</div>
+
+<%- include('../partials/footer') %>

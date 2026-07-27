@@ -1,0 +1,101 @@
+<%- include('../partials/header', {title: hotel.name}) %>
+<% const canEdit = ['Super Admin','Director','Contracting Team','Product Team'].includes(currentRole); %>
+
+<h4 class="mb-1"><%= hotel.name %></h4>
+<p class="text-muted"><%= hotel.city %>, <%= hotel.country %> · <%= hotel.category_star %>★ · <%= hotel.contact_person||'' %> <%= hotel.phone||'' %></p>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6 class="fw-bold">Room Categories</h6>
+      <ul class="list-group list-group-flush mb-2">
+        <% roomCategories.forEach(function(rc){ %>
+          <li class="list-group-item px-0"><%= rc.name %> <span class="text-muted small">(max <%= rc.max_occupancy %> pax)</span></li>
+        <% }) %>
+        <% if (roomCategories.length===0) { %><li class="list-group-item px-0 text-muted small">None yet.</li><% } %>
+      </ul>
+      <% if (canEdit) { %>
+      <form method="POST" action="/hotels/<%= hotel.id %>/room-categories/new" class="row g-1">
+        <div class="col-7"><input class="form-control form-control-sm" name="name" placeholder="e.g. Deluxe" required></div>
+        <div class="col-3"><input class="form-control form-control-sm" type="number" name="max_occupancy" placeholder="Max pax" value="3"></div>
+        <div class="col-2"><button class="btn btn-sm btn-outline-primary w-100">+</button></div>
+      </form>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Contracts</h6>
+      </div>
+      <% if (canEdit) { %>
+      <form method="POST" action="/hotels/<%= hotel.id %>/contracts/new" class="row g-2 mt-1 mb-3">
+        <div class="col-md-3"><input class="form-control form-control-sm" name="contract_name" placeholder="Contract name (e.g. 2026-27)" required></div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="valid_from" required></div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="valid_to" required></div>
+        <div class="col-md-3"><input class="form-control form-control-sm" name="payment_terms" placeholder="Payment terms"></div>
+        <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">+ Add Contract</button></div>
+      </form>
+      <% } %>
+
+      <% contracts.forEach(function(c){ %>
+        <div class="border rounded p-2 mb-3">
+          <div class="fw-bold"><%= c.contract_name %> <span class="text-muted small">(<%= c.valid_from %> to <%= c.valid_to %>)</span></div>
+          <div class="small text-muted mb-2"><%= c.payment_terms || '' %></div>
+
+          <% if (canEdit) { %>
+          <form method="POST" action="/hotels/contracts/<%= c.id %>/seasons/new" class="row g-1 mb-2">
+            <div class="col-md-3"><input class="form-control form-control-sm" name="season_name" placeholder="Season (e.g. Peak)" required></div>
+            <div class="col-md-3"><input class="form-control form-control-sm" type="date" name="date_from" required></div>
+            <div class="col-md-3"><input class="form-control form-control-sm" type="date" name="date_to" required></div>
+            <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100">+ Add Season</button></div>
+          </form>
+          <% } %>
+
+          <% (seasonsByContract[c.id]||[]).forEach(function(s){ %>
+            <div class="ms-2 mb-2 border-start ps-2">
+              <div class="fw-semibold small"><%= s.season_name %> <span class="text-muted"><%= s.date_from %> → <%= s.date_to %></span></div>
+              <table class="table table-sm mb-1">
+                <thead><tr><th>Room</th><th>Meal</th><th>Base(Dbl)</th><th>Extra Adult</th><th>Extra Child</th><th>Single Supp</th></tr></thead>
+                <tbody>
+                <% (ratesBySeason[s.id]||[]).forEach(function(r){ %>
+                  <tr>
+                    <td><%= (roomCategories.find(function(rc){return rc.id===r.room_category_id;})||{}).name %></td>
+                    <td><%= r.meal_plan_code %></td>
+                    <td>₹<%= r.base_rate_double %></td>
+                    <td>₹<%= r.extra_adult_rate %></td>
+                    <td>₹<%= r.extra_child_wb_rate %></td>
+                    <td>₹<%= r.single_supplement %></td>
+                  </tr>
+                <% }) %>
+                </tbody>
+              </table>
+              <% if (canEdit) { %>
+              <form method="POST" action="/hotels/seasons/<%= s.id %>/rates/new" class="row g-1">
+                <div class="col-md-2">
+                  <select class="form-select form-select-sm" name="room_category_id" required>
+                    <% roomCategories.forEach(function(rc){ %><option value="<%= rc.id %>"><%= rc.name %></option><% }) %>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-select form-select-sm" name="meal_plan_code" required>
+                    <% mealPlans.forEach(function(mp){ %><option value="<%= mp.code %>"><%= mp.code %></option><% }) %>
+                  </select>
+                </div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="base_rate_double" placeholder="Base ₹" required></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_adult_rate" placeholder="Extra adult ₹"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_child_wb_rate" placeholder="Extra child ₹"></div>
+                <div class="col-md-2"><button class="btn btn-sm btn-outline-primary w-100">+ Rate</button></div>
+              </form>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+      <% }) %>
+      <% if (contracts.length===0) { %><p class="text-muted small">No contracts yet.</p><% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

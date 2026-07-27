@@ -1,0 +1,49 @@
+<%- include('../partials/header', {title: 'New Hotel'}) %>
+
+<h4 class="section-title">New Hotel</h4>
+<div class="card p-4" style="max-width:700px;">
+<form method="POST" action="/hotels/new">
+  <div class="row g-3">
+    <div class="col-md-8">
+      <label class="form-label">Hotel Name *</label>
+      <input class="form-control" name="name" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Star Category</label>
+      <select class="form-select" name="category_star">
+        <option value="3">3★</option><option value="4">4★</option><option value="5">5★</option><option value="7">7★ / Luxury</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">City *</label>
+      <input class="form-control" name="city" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Country</label>
+      <input class="form-control" name="country" value="India">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Contact Person</label>
+      <input class="form-control" name="contact_person">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Phone</label>
+      <input class="form-control" name="phone">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Email</label>
+      <input class="form-control" type="email" name="email">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">GSTIN</label>
+      <input class="form-control" name="gstin">
+    </div>
+  </div>
+  <div class="mt-4">
+    <button class="btn btn-primary">Create Hotel</button>
+    <a href="/hotels" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,163 @@
+<%- include('../partials/header', {title: 'Quotation #' + quotation.id}) %>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h4 class="mb-0">Quotation QUO-<%= quotation.id %> — <%= quotation.destination %></h4>
+    <small class="text-muted">
+      <%= quotation.travel_start_date||'TBD' %> · <%= quotation.nights %> night(s) ·
+      <%= quotation.pax_adults %> adult(s), <%= quotation.pax_children %> child(ren) ·
+      Status: <span class="badge bg-info text-dark"><%= quotation.status %></span>
+    </small>
+  </div>
+  <div>
+    <% if (quotation.status !== 'converted') { %>
+    <form method="POST" action="/quotations/<%= quotation.id %>/send" class="d-inline">
+      <button class="btn btn-outline-primary btn-sm">Mark Sent to Guest</button>
+    </form>
+    <form method="POST" action="/quotations/<%= quotation.id %>/convert" class="d-inline">
+      <button class="btn btn-success btn-sm">Convert to Booking</button>
+    </form>
+    <% } else { %>
+      <span class="badge bg-success">Converted to Booking</span>
+    <% } %>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold">Itinerary Items</h6>
+      <table class="table table-sm">
+        <thead><tr><th>Type</th><th>Description</th><th>Qty</th><th>Unit Cost</th><th>Total Cost</th><th></th></tr></thead>
+        <tbody>
+        <% items.forEach(function(it){ %>
+          <tr>
+            <td><span class="badge bg-secondary text-capitalize"><%= it.component_type %></span></td>
+            <td><%= it.description %></td>
+            <td><%= it.quantity %></td>
+            <td>₹<%= Number(it.unit_cost).toLocaleString('en-IN') %></td>
+            <td>₹<%= Number(it.total_cost).toLocaleString('en-IN') %></td>
+            <td>
+              <% if (canEdit && quotation.status !== 'converted') { %>
+              <form method="POST" action="/quotations/<%= quotation.id %>/remove-item/<%= it.id %>">
+                <button class="btn btn-sm btn-outline-danger">×</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (items.length===0) { %><tr><td colspan="6" class="text-muted text-center">No items yet — add a hotel stay or a manual line item below.</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (canEdit && quotation.status !== 'converted') { %>
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold">Add Hotel Component (auto-costed from contracted rates)</h6>
+      <form method="POST" action="/quotations/<%= quotation.id %>/add-hotel-item" class="row g-2">
+        <div class="col-md-3">
+          <select class="form-select form-select-sm" name="hotel_id" id="hotelSelect" required>
+            <option value="">Select hotel...</option>
+            <% hotels.forEach(function(h){ %><option value="<%= h.id %>"><%= h.name %> (<%= h.city %>)</option><% }) %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select form-select-sm" name="room_category_id" id="roomSelect" required>
+            <option value="">Room type...</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select form-select-sm" name="meal_plan_code" required>
+            <option value="CP">CP</option><option value="MAP">MAP</option><option value="AP">AP</option><option value="AI">AI</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <input class="form-control form-control-sm" type="date" name="check_in" required>
+        </div>
+        <div class="col-md-1">
+          <input class="form-control form-control-sm" type="number" name="nights" value="<%= quotation.nights %>" min="1" required>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-primary w-100">+ Add Hotel</button>
+        </div>
+      </form>
+      <p class="text-muted small mt-2 mb-0">Looks up the contracted rate for that hotel/room/meal-plan/date automatically. If nothing is found, add the rate under Hotel Contracts first.</p>
+    </div>
+
+    <div class="card p-3">
+      <h6 class="fw-bold">Add Manual Line Item (transport / activity / flight / visa / insurance / other)</h6>
+      <form method="POST" action="/quotations/<%= quotation.id %>/add-manual-item" class="row g-2">
+        <div class="col-md-2">
+          <select class="form-select form-select-sm" name="component_type">
+            <option value="transport">Transport</option>
+            <option value="activity">Activity</option>
+            <option value="flight">Flight</option>
+            <option value="visa">Visa</option>
+            <option value="insurance">Insurance</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="col-md-4"><input class="form-control form-control-sm" name="description" placeholder="Description" required></div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="unit_cost" placeholder="Unit cost ₹" required></div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="quantity" placeholder="Qty" value="1"></div>
+        <div class="col-md-2"><button class="btn btn-sm btn-outline-primary w-100">+ Add Item</button></div>
+      </form>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6 class="fw-bold">Costing & Pricing</h6>
+      <% if (canEdit && quotation.status !== 'converted') { %>
+      <form method="POST" action="/quotations/<%= quotation.id %>/pricing">
+        <div class="mb-2">
+          <label class="form-label small">Markup %</label>
+          <input class="form-control form-control-sm" type="number" step="0.1" name="markup_pct" value="<%= quotation.markup_pct %>">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small">Discount (₹)</label>
+          <input class="form-control form-control-sm" type="number" name="discount_amt" value="<%= quotation.discount_amt %>">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small">GST %</label>
+          <input class="form-control form-control-sm" type="number" step="0.1" name="gst_pct" value="<%= quotation.gst_pct %>">
+        </div>
+        <button class="btn btn-sm btn-outline-primary w-100">Recalculate</button>
+      </form>
+      <% } %>
+      <hr>
+      <table class="table table-sm mb-0">
+        <tr><td>Total Cost</td><td class="text-end">₹<%= Number(quotation.total_cost||0).toLocaleString('en-IN') %></td></tr>
+        <tr><td>Markup</td><td class="text-end"><%= quotation.markup_pct %>%</td></tr>
+        <tr><td>Discount</td><td class="text-end">₹<%= Number(quotation.discount_amt||0).toLocaleString('en-IN') %></td></tr>
+        <tr><td>GST</td><td class="text-end"><%= quotation.gst_pct %>%</td></tr>
+        <tr class="fw-bold"><td>Sell Price</td><td class="text-end">₹<%= Number(quotation.total_sell_price||0).toLocaleString('en-IN') %></td></tr>
+        <tr class="text-success fw-bold"><td>Margin</td><td class="text-end">₹<%= Number(quotation.margin_amount||0).toLocaleString('en-IN') %> (<%= Number(quotation.margin_pct||0).toFixed(1) %>%)</td></tr>
+        <% if (quotation.markup_pct >= 10 && quotation.discount_amt > 0) { %>
+        <tr><td colspan="2" class="small text-warning">Discount applied — in production this would route to Sales Manager for approval above threshold.</td></tr>
+        <% } %>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // room categories per hotel, passed from the server so the room-type
+  // dropdown can filter itself the instant a hotel is picked
+  const ROOM_DATA = <%- JSON.stringify(allRoomCategories) %>;
+  const hotelSelect = document.getElementById('hotelSelect');
+  const roomSelect = document.getElementById('roomSelect');
+  function refreshRooms() {
+    const hotelId = Number(hotelSelect.value);
+    roomSelect.innerHTML = '<option value="">Room type...</option>';
+    ROOM_DATA.filter(function(rc){ return rc.hotel_id === hotelId; }).forEach(function(rc){
+      const opt = document.createElement('option');
+      opt.value = rc.id; opt.textContent = rc.name;
+      roomSelect.appendChild(opt);
+    });
+  }
+  if (hotelSelect) hotelSelect.addEventListener('change', refreshRooms);
+</script>
+
+<%- include('../partials/footer') %>

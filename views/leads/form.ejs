@@ -1,0 +1,71 @@
+<%- include('../partials/header', {title: 'New Lead'}) %>
+
+<h4 class="section-title">New Lead</h4>
+
+<div class="card p-4" style="max-width:700px;">
+<form method="POST" action="/leads/new">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Guest Name *</label>
+      <input class="form-control" name="guest_name" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Destination *</label>
+      <input class="form-control" name="destination" required placeholder="e.g. Bali 6D5N">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Phone</label>
+      <input class="form-control" name="phone">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Email</label>
+      <input class="form-control" type="email" name="email">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Travel Start Date</label>
+      <input class="form-control" type="date" name="travel_start_date">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Pax (Adults)</label>
+      <input class="form-control" type="number" name="pax_adults" value="2" min="1">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Pax (Children)</label>
+      <input class="form-control" type="number" name="pax_children" value="0" min="0">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Source</label>
+      <select class="form-select" name="source">
+        <% sources.forEach(function(s){ %><option><%= s %></option><% }) %>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Priority</label>
+      <select class="form-select" name="priority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Assign To</label>
+      <select class="form-select" name="assigned_to">
+        <option value="">Unassigned</option>
+        <% users.forEach(function(u){ %>
+          <option value="<%= u.id %>" <%= u.id === currentUser.id ? 'selected' : '' %>><%= u.full_name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Budget per pax (₹)</label>
+      <input class="form-control" type="number" name="budget_per_pax">
+    </div>
+  </div>
+  <div class="mt-4">
+    <button class="btn btn-primary">Create Lead</button>
+    <a href="/leads" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+</div>
+
+<%- include('../partials/footer') %>

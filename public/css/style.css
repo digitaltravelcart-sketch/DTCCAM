@@ -1,0 +1,12 @@
+body { background: #f4f6f9; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.tc-navbar { background: #1f4e78; }
+.card-kpi { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.card-kpi .kpi-value { font-size: 1.8rem; font-weight: 700; color: #1f4e78; }
+.card-kpi .kpi-label { font-size: 0.85rem; color: #6c757d; text-transform: uppercase; letter-spacing: .03em; }
+table.table thead { background: #1f4e78; color: #fff; }
+.badge-status-pending { background: #f0ad4e; }
+.badge-status-confirmed { background: #5cb85c; }
+.badge-status-cancelled { background: #d9534f; }
+.login-wrapper { max-width: 400px; margin: 8vh auto; }
+.login-card { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+.section-title { color: #1f4e78; font-weight: 700; border-bottom: 2px solid #e3e8ee; padding-bottom: 8px; margin-bottom: 20px; }

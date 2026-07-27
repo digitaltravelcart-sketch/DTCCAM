@@ -1,0 +1,44 @@
+<%- include('../partials/header', {title: 'New Quotation'}) %>
+
+<h4 class="section-title">New Quotation</h4>
+<div class="card p-4" style="max-width:700px;">
+<form method="POST" action="/quotations/new">
+  <div class="row g-3">
+    <div class="col-md-12">
+      <label class="form-label">Linked Lead (optional)</label>
+      <select class="form-select" name="lead_id">
+        <option value="">— No lead / walk-in quotation —</option>
+        <% leads.forEach(function(l){ %>
+          <option value="<%= l.id %>" <%= (lead && lead.id===l.id) ? 'selected':'' %>><%= l.guest_name %> — <%= l.destination %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Destination *</label>
+      <input class="form-control" name="destination" value="<%= lead ? lead.destination : '' %>" required>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Travel Start Date</label>
+      <input class="form-control" type="date" name="travel_start_date" value="<%= lead ? (lead.travel_start_date||'') : '' %>">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Nights</label>
+      <input class="form-control" type="number" name="nights" value="4" min="1">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Pax Adults</label>
+      <input class="form-control" type="number" name="pax_adults" value="<%= lead ? lead.pax_adults : 2 %>" min="1">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Pax Children</label>
+      <input class="form-control" type="number" name="pax_children" value="<%= lead ? lead.pax_children : 0 %>" min="0">
+    </div>
+  </div>
+  <div class="mt-4">
+    <button class="btn btn-primary">Start Quotation</button>
+    <a href="/quotations" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+</div>
+
+<%- include('../partials/footer') %>

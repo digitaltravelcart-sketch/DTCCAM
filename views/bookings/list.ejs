@@ -1,0 +1,31 @@
+<%- include('../partials/header', {title: 'Bookings'}) %>
+
+<h4 class="section-title">Bookings</h4>
+
+<div class="card p-3">
+<table class="table table-hover align-middle">
+  <thead>
+    <tr><th>Booking</th><th>Destination</th><th>Travel Date</th><th>Sell Price</th><th>Outstanding</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <% bookings.forEach(function(b){ %>
+    <tr>
+      <td><a href="/bookings/<%= b.id %>"><%= b.booking_code %></a></td>
+      <td><%= b.destination %></td>
+      <td><%= b.travel_start_date %></td>
+      <td>₹<%= Number(b.total_sell_price||0).toLocaleString('en-IN') %></td>
+      <td>₹<%= Number(b.outstanding||0).toLocaleString('en-IN') %></td>
+      <td>
+        <% const cls = b.status==='fully_confirmed'?'success':(b.status==='cancelled'?'danger':'warning'); %>
+        <span class="badge bg-<%= cls %>"><%= b.status.replace(/_/g,' ') %></span>
+      </td>
+    </tr>
+    <% }) %>
+    <% if (bookings.length===0) { %>
+      <tr><td colspan="6" class="text-muted text-center py-4">No bookings yet — convert a quotation to create one.</td></tr>
+    <% } %>
+  </tbody>
+</table>
+</div>
+
+<%- include('../partials/footer') %>
