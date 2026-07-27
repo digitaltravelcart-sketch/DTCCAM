@@ -44,7 +44,7 @@
     <div class="card p-3 mt-3">
       <h6 class="fw-bold">Trip Info</h6>
       <p class="mb-1 small">Travel start: <%= lead.travel_start_date || '—' %></p>
-      <p class="mb-1 small">Pax: <%= lead.pax_adults %> adults, <%= lead.pax_children %> children</p>
+      <p class="mb-1 small">Pax: <%= lead.pax_adults %> adults, <%= lead.pax_children %> children<% if (lead.pax_children_ages && lead.pax_children_ages.length) { %> (ages: <%= lead.pax_children_ages.join(', ') %>)<% } %></p>
       <p class="mb-0 small">Budget/pax: ₹<%= lead.budget_per_pax || '—' %></p>
     </div>
     <div class="card p-3 mt-3">

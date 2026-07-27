@@ -14,16 +14,36 @@
       <input class="form-control" name="destination" required placeholder="e.g. Bali 6D5N">
     </div>
     <div class="col-md-6">
-      <label class="form-label">Phone</label>
-      <input class="form-control" name="phone">
+      <label class="form-label">Phone *</label>
+      <div class="d-flex gap-2">
+        <input class="form-control" style="max-width:100px" name="phone_country_code"
+               list="country-codes" value="+91" required
+               pattern="^\+[1-9][0-9]{0,3}$" title="Country code, e.g. +91">
+        <input class="form-control" type="tel" name="phone_number" required
+               pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+               placeholder="10-digit number" title="Enter exactly 10 digits, no spaces or symbols">
+      </div>
+      <datalist id="country-codes">
+        <option value="+91">India</option>
+        <option value="+971">UAE</option>
+        <option value="+65">Singapore</option>
+        <option value="+1">US / Canada</option>
+        <option value="+44">UK</option>
+        <option value="+61">Australia</option>
+        <option value="+966">Saudi Arabia</option>
+        <option value="+974">Qatar</option>
+        <option value="+60">Malaysia</option>
+        <option value="+66">Thailand</option>
+      </datalist>
     </div>
     <div class="col-md-6">
       <label class="form-label">Email</label>
-      <input class="form-control" type="email" name="email">
+      <input class="form-control" type="email" name="email"
+             pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" title="Enter a valid email address">
     </div>
     <div class="col-md-4">
       <label class="form-label">Travel Start Date</label>
-      <input class="form-control" type="date" name="travel_start_date">
+      <input class="form-control" type="date" name="travel_start_date" min="<%= today %>">
     </div>
     <div class="col-md-4">
       <label class="form-label">Pax (Adults)</label>
@@ -31,7 +51,11 @@
     </div>
     <div class="col-md-4">
       <label class="form-label">Pax (Children)</label>
-      <input class="form-control" type="number" name="pax_children" value="0" min="0">
+      <input class="form-control" type="number" name="pax_children" id="pax_children" value="0" min="0" max="10">
+    </div>
+    <div class="col-md-12" id="children-ages-wrap" style="display:none;">
+      <label class="form-label">Children's Ages</label>
+      <div id="children-ages" class="d-flex gap-2 flex-wrap"></div>
     </div>
     <div class="col-md-6">
       <label class="form-label">Source</label>
@@ -67,5 +91,37 @@
   </div>
 </form>
 </div>
+
+<script>
+  (function () {
+    var countInput = document.getElementById('pax_children');
+    var wrap = document.getElementById('children-ages-wrap');
+    var container = document.getElementById('children-ages');
+
+    function render() {
+      var count = Math.max(0, Math.min(10, Number(countInput.value) || 0));
+      var existing = container.querySelectorAll('input');
+      var existingVals = Array.prototype.map.call(existing, function (i) { return i.value; });
+      container.innerHTML = '';
+      wrap.style.display = count > 0 ? '' : 'none';
+      for (var i = 0; i < count; i++) {
+        var field = document.createElement('input');
+        field.type = 'number';
+        field.name = 'child_age[]';
+        field.className = 'form-control';
+        field.style.maxWidth = '110px';
+        field.min = 0;
+        field.max = 17;
+        field.required = true;
+        field.placeholder = 'Child ' + (i + 1) + ' age';
+        if (existingVals[i]) field.value = existingVals[i];
+        container.appendChild(field);
+      }
+    }
+
+    countInput.addEventListener('input', render);
+    render();
+  })();
+</script>
 
 <%- include('../partials/footer') %>
