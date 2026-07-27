@@ -2,17 +2,17 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const store = require("../lib/store");
-const { requireRole, ADMIN_ROLES } = require("../lib/auth");
+const { requireRole, ADMIN_ROLES, ROLE_DESCRIPTIONS } = require("../lib/auth");
 
 router.use(requireRole(...ADMIN_ROLES));
 
 router.get("/users", (req, res) => {
   const users = store.all("users");
-  res.render("admin/users", { title: "Admin: Users", users, roles: store.all("roles"), store });
+  res.render("admin/users", { title: "Manage Users", users, roles: store.all("roles"), roleDescriptions: ROLE_DESCRIPTIONS, store });
 });
 
 router.get("/users/new", (req, res) => {
-  res.render("admin/user_form", { title: "New User", user: null, roles: store.all("roles") });
+  res.render("admin/user_form", { title: "New User", user: null, roles: store.all("roles"), roleDescriptions: ROLE_DESCRIPTIONS });
 });
 
 router.post("/users/new", (req, res) => {

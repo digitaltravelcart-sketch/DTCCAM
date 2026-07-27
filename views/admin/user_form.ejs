@@ -1,30 +1,59 @@
 <%- include('../partials/header', {title: 'New User'}) %>
 
 <h4 class="section-title">New User</h4>
-<div class="card p-4" style="max-width:600px;">
-<form method="POST" action="/admin/users/new">
-  <div class="mb-3">
-    <label class="form-label">Full Name *</label>
-    <input class="form-control" name="full_name" required>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <form method="POST" action="/admin/users/new">
+        <div class="mb-3">
+          <label class="form-label">Full Name *</label>
+          <input class="form-control" name="full_name" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email *</label>
+          <input class="form-control" type="email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Temporary Password *</label>
+          <input class="form-control" name="password" required>
+          <div class="form-text">Share this with the user — they can log in immediately with it.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Role *</label>
+          <select class="form-select" name="role_id" id="roleSelect" required>
+            <option value="">Select a role...</option>
+            <% roles.forEach(function(r){ %><option value="<%= r.id %>"><%= r.name %></option><% }) %>
+          </select>
+          <div class="form-text" id="roleDescription">Pick a role to see what it can access.</div>
+        </div>
+        <button class="btn btn-primary">Create User</button>
+        <a href="/admin/users" class="btn btn-outline-secondary">Cancel</a>
+      </form>
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Email *</label>
-    <input class="form-control" type="email" name="email" required>
+
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6 class="fw-bold">What each role can do</h6>
+      <table class="table table-sm mb-0">
+        <% roles.forEach(function(r){ %>
+        <tr>
+          <td class="fw-semibold text-nowrap align-top"><%= r.name %></td>
+          <td class="small text-muted"><%= roleDescriptions[r.name] || 'No specific module access — view-only.' %></td>
+        </tr>
+        <% }) %>
+      </table>
+    </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label">Temporary Password *</label>
-    <input class="form-control" name="password" required>
-    <div class="form-text">Share this with the user — they can log in immediately with it.</div>
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Role *</label>
-    <select class="form-select" name="role_id" required>
-      <% roles.forEach(function(r){ %><option value="<%= r.id %>"><%= r.name %></option><% }) %>
-    </select>
-  </div>
-  <button class="btn btn-primary">Create User</button>
-  <a href="/admin/users" class="btn btn-outline-secondary">Cancel</a>
-</form>
 </div>
+
+<script>
+  const ROLE_DESCRIPTIONS = <%- JSON.stringify(roles.reduce(function(acc, r){ acc[r.id] = roleDescriptions[r.name] || 'No specific module access — view-only.'; return acc; }, {})) %>;
+  const roleSelect = document.getElementById('roleSelect');
+  const roleDescription = document.getElementById('roleDescription');
+  roleSelect.addEventListener('change', function () {
+    roleDescription.textContent = ROLE_DESCRIPTIONS[roleSelect.value] || 'Pick a role to see what it can access.';
+  });
+</script>
 
 <%- include('../partials/footer') %>

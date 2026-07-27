@@ -1,12 +1,12 @@
-<%- include('../partials/header', {title: 'Admin: Users'}) %>
+<%- include('../partials/header', {title: 'Manage Users'}) %>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="section-title mb-0">Admin: Users & Roles</h4>
+  <h4 class="section-title mb-0">Manage Users & Roles</h4>
   <a href="/admin/users/new" class="btn btn-primary btn-sm">+ New User</a>
 </div>
 
-<div class="card p-3">
-<table class="table table-hover align-middle">
+<div class="card p-3 mb-3">
+<table class="table table-hover align-middle mb-0">
   <thead>
     <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr>
   </thead>
@@ -19,7 +19,7 @@
         <form method="POST" action="/admin/users/<%= u.id %>/role" class="d-flex gap-1">
           <select name="role_id" class="form-select form-select-sm" onchange="this.form.submit()">
             <% roles.forEach(function(r){ %>
-              <option value="<%= r.id %>" <%= u.role_id===r.id?'selected':'' %>><%= r.name %></option>
+              <option value="<%= r.id %>" title="<%= roleDescriptions[r.name] || '' %>" <%= u.role_id===r.id?'selected':'' %>><%= r.name %></option>
             <% }) %>
           </select>
         </form>
@@ -36,6 +36,18 @@
     <% }) %>
   </tbody>
 </table>
+</div>
+
+<div class="card p-3">
+  <h6 class="fw-bold">What each role can do</h6>
+  <table class="table table-sm mb-0">
+    <% roles.forEach(function(r){ %>
+    <tr>
+      <td class="fw-semibold text-nowrap align-top"><%= r.name %></td>
+      <td class="small text-muted"><%= roleDescriptions[r.name] || 'No specific module access — view-only.' %></td>
+    </tr>
+    <% }) %>
+  </table>
 </div>
 
 <%- include('../partials/footer') %>
