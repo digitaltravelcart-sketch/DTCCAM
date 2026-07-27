@@ -72,6 +72,7 @@ async function main() {
     next();
   });
 
+  app.use("/", require("./routes/recover"));
   app.use("/", require("./routes/auth"));
   app.use("/", requireLogin, require("./routes/dashboard"));
   app.use("/leads", requireLogin, require("./routes/leads"));
