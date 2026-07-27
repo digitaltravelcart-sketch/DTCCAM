@@ -72,16 +72,34 @@
           </select>
         </div>
         <div class="col-md-2">
-          <input class="form-control form-control-sm" type="date" name="check_in" required>
-        </div>
-        <div class="col-md-1">
-          <input class="form-control form-control-sm" type="number" name="nights" value="<%= quotation.nights %>" min="1" required>
+          <label class="form-label small mb-0">Check-in</label>
+          <input class="form-control form-control-sm" type="date" name="check_in" id="checkInInput" required>
         </div>
         <div class="col-md-2">
+          <label class="form-label small mb-0">Check-out</label>
+          <input class="form-control form-control-sm" type="date" name="check_out" id="checkOutInput" required>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small mb-0">Nights</label>
+          <input class="form-control form-control-sm" type="number" id="nightsDisplay" value="" readonly tabindex="-1">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Adults in room</label>
+          <input class="form-control form-control-sm" type="number" name="adults" value="<%= quotation.pax_adults %>" min="1" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Children (CWB)</label>
+          <input class="form-control form-control-sm" type="number" name="children_with_bed" value="0" min="0">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-0">Children (CNB)</label>
+          <input class="form-control form-control-sm" type="number" name="children_no_bed" value="0" min="0">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
           <button class="btn btn-sm btn-primary w-100">+ Add Hotel</button>
         </div>
       </form>
-      <p class="text-muted small mt-2 mb-0">Looks up the contracted rate for that hotel/room/meal-plan/date automatically. If nothing is found, add the rate under Hotel Contracts first.</p>
+      <p class="text-muted small mt-2 mb-0">1 adult uses the SGL rate, 2+ uses DBL + extra adult. Looks up the contracted rate for that hotel/room/meal-plan/date automatically. If nothing is found, add the rate under Hotel Contracts first.</p>
     </div>
 
     <div class="card p-3 mb-3">
@@ -193,6 +211,29 @@
     });
   }
   if (hotelSelect) hotelSelect.addEventListener('change', refreshRooms);
+
+  // nights is derived from check-in/check-out, never typed directly
+  const checkInInput = document.getElementById('checkInInput');
+  const checkOutInput = document.getElementById('checkOutInput');
+  const nightsDisplay = document.getElementById('nightsDisplay');
+  function refreshNights() {
+    if (!checkInInput.value || !checkOutInput.value) {
+      nightsDisplay.value = '';
+      return;
+    }
+    const ms = new Date(checkOutInput.value) - new Date(checkInInput.value);
+    const nights = Math.round(ms / 86400000);
+    nightsDisplay.value = nights > 0 ? nights : '';
+  }
+  if (checkInInput) {
+    checkInInput.addEventListener('change', function () {
+      // keep check-out at least a day after check-in
+      if (checkOutInput.value && checkOutInput.value <= checkInInput.value) checkOutInput.value = '';
+      checkOutInput.min = checkInInput.value;
+      refreshNights();
+    });
+    checkOutInput.addEventListener('change', refreshNights);
+  }
 
   // activities are city-mapped, so the activity dropdown only shows
   // activities in the city picked in the city dropdown next to it

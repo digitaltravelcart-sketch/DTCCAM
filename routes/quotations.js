@@ -4,6 +4,11 @@ const store = require("../lib/store");
 const costing = require("../lib/costing");
 const { requireRole, SALES_ROLES } = require("../lib/auth");
 
+function nightsBetween(checkIn, checkOut) {
+  const ms = new Date(checkOut) - new Date(checkIn);
+  return Math.round(ms / 86400000);
+}
+
 function recalc(quotation) {
   const items = store.where("quotation_items", (i) => i.quotation_id === quotation.id);
   const totals = costing.computeQuotationTotals(
@@ -82,26 +87,38 @@ router.get("/:id", (req, res) => {
 router.post("/:id/add-hotel-item", requireRole(...SALES_ROLES), (req, res) => {
   const quotation = store.find("quotations", req.params.id);
   const b = req.body;
+  const nights = nightsBetween(b.check_in, b.check_out);
+  if (!b.check_in || !b.check_out || nights < 1) {
+    req.session.flashError = "Check-out must be after check-in.";
+    return res.redirect(`/quotations/${quotation.id}`);
+  }
+  const adults = Number(b.adults || quotation.pax_adults || 1);
+  const childrenWithBed = Number(b.children_with_bed || 0);
+  const childrenNoBed = Number(b.children_no_bed || 0);
   const result = costing.computeHotelComponentCost(
     b.hotel_id,
     b.room_category_id,
     b.meal_plan_code,
     b.check_in,
-    Number(b.nights || 1),
-    quotation.pax_adults,
-    quotation.pax_children
+    nights,
+    adults,
+    childrenWithBed,
+    childrenNoBed
   );
   if (!result) {
     req.session.flashError = "No contracted rate found for that hotel/room/meal-plan/date combination. Add a rate under Hotel Contracts first.";
     return res.redirect(`/quotations/${quotation.id}`);
   }
   const hotel = store.find("hotels", b.hotel_id);
+  const occupancyBits = [`${adults} adult${adults === 1 ? '' : 's'}`];
+  if (childrenWithBed) occupancyBits.push(`${childrenWithBed} CWB`);
+  if (childrenNoBed) occupancyBits.push(`${childrenNoBed} CNB`);
   store.insert("quotation_items", {
     quotation_id: quotation.id,
     component_type: "hotel",
-    description: `${hotel.name} — ${b.nights} night(s), ${b.meal_plan_code}`,
+    description: `${hotel.name} — ${b.check_in} to ${b.check_out}, ${nights} night(s), ${b.meal_plan_code}, ${occupancyBits.join(' + ')}`,
     unit_cost: result.perNight,
-    quantity: Number(b.nights),
+    quantity: nights,
     total_cost: result.total,
   });
   recalc(quotation);
