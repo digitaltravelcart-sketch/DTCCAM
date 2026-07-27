@@ -65,7 +65,6 @@ router.post("/:id/contracts/new", requireRole(...CONTRACTING_ROLES), (req, res) 
   const b = req.body;
   store.insert("hotel_contracts", {
     hotel_id: Number(req.params.id),
-    contract_name: b.contract_name,
     valid_from: b.valid_from,
     valid_to: b.valid_to,
     payment_terms: b.payment_terms,
@@ -95,10 +94,11 @@ router.post("/seasons/:seasonId/rates/new", requireRole(...CONTRACTING_ROLES), (
     season_id: season.id,
     room_category_id: Number(b.room_category_id),
     meal_plan_code: b.meal_plan_code,
+    base_rate_single: Number(b.base_rate_single || 0),
     base_rate_double: Number(b.base_rate_double),
     extra_adult_rate: Number(b.extra_adult_rate || 0),
+    extra_child_nb_rate: Number(b.extra_child_nb_rate || 0),
     extra_child_wb_rate: Number(b.extra_child_wb_rate || 0),
-    single_supplement: Number(b.single_supplement || 0),
   });
   res.redirect(`/hotels/${contract.hotel_id}`);
 });

@@ -31,17 +31,22 @@
       </div>
       <% if (canEdit) { %>
       <form method="POST" action="/hotels/<%= hotel.id %>/contracts/new" class="row g-2 mt-1 mb-3">
-        <div class="col-md-3"><input class="form-control form-control-sm" name="contract_name" placeholder="Contract name (e.g. 2026-27)" required></div>
-        <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="valid_from" required></div>
-        <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="valid_to" required></div>
-        <div class="col-md-3"><input class="form-control form-control-sm" name="payment_terms" placeholder="Payment terms"></div>
-        <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">+ Add Contract</button></div>
+        <div class="col-md-3"><label class="form-label small mb-0">Valid from</label><input class="form-control form-control-sm" type="date" name="valid_from" required></div>
+        <div class="col-md-3"><label class="form-label small mb-0">Valid to</label><input class="form-control form-control-sm" type="date" name="valid_to" required></div>
+        <div class="col-md-3">
+          <label class="form-label small mb-0">Payment terms</label>
+          <select class="form-select form-select-sm" name="payment_terms" required>
+            <option value="Advance">Advance</option>
+            <option value="BTC">BTC</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end"><button class="btn btn-sm btn-primary w-100">+ Add Contract</button></div>
       </form>
       <% } %>
 
       <% contracts.forEach(function(c){ %>
         <div class="border rounded p-2 mb-3">
-          <div class="fw-bold"><%= c.contract_name %> <span class="text-muted small">(<%= c.valid_from %> to <%= c.valid_to %>)</span></div>
+          <div class="fw-bold">Contract <span class="text-muted small">(<%= c.valid_from %> to <%= c.valid_to %>)</span></div>
           <div class="small text-muted mb-2"><%= c.payment_terms || '' %></div>
 
           <% if (canEdit) { %>
@@ -57,16 +62,17 @@
             <div class="ms-2 mb-2 border-start ps-2">
               <div class="fw-semibold small"><%= s.season_name %> <span class="text-muted"><%= s.date_from %> → <%= s.date_to %></span></div>
               <table class="table table-sm mb-1">
-                <thead><tr><th>Room</th><th>Meal</th><th>Base(Dbl)</th><th>Extra Adult</th><th>Extra Child</th><th>Single Supp</th></tr></thead>
+                <thead><tr><th>Room</th><th>Meal</th><th>SGL</th><th>DBL</th><th>Extra Adult</th><th>CNB</th><th>CWB</th></tr></thead>
                 <tbody>
                 <% (ratesBySeason[s.id]||[]).forEach(function(r){ %>
                   <tr>
                     <td><%= (roomCategories.find(function(rc){return rc.id===r.room_category_id;})||{}).name %></td>
                     <td><%= r.meal_plan_code %></td>
+                    <td>₹<%= r.base_rate_single %></td>
                     <td>₹<%= r.base_rate_double %></td>
                     <td>₹<%= r.extra_adult_rate %></td>
+                    <td>₹<%= r.extra_child_nb_rate %></td>
                     <td>₹<%= r.extra_child_wb_rate %></td>
-                    <td>₹<%= r.single_supplement %></td>
                   </tr>
                 <% }) %>
                 </tbody>
@@ -83,9 +89,11 @@
                     <% mealPlans.forEach(function(mp){ %><option value="<%= mp.code %>"><%= mp.code %></option><% }) %>
                   </select>
                 </div>
-                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="base_rate_double" placeholder="Base ₹" required></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="base_rate_single" placeholder="SGL ₹"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="base_rate_double" placeholder="DBL ₹" required></div>
                 <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_adult_rate" placeholder="Extra adult ₹"></div>
-                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_child_wb_rate" placeholder="Extra child ₹"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_child_nb_rate" placeholder="CNB ₹"></div>
+                <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="extra_child_wb_rate" placeholder="CWB ₹"></div>
                 <div class="col-md-2"><button class="btn btn-sm btn-outline-primary w-100">+ Rate</button></div>
               </form>
               <% } %>
