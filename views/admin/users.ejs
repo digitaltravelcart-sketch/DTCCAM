@@ -16,13 +16,20 @@
       <td><%= u.full_name %> <% if (u.id === currentUser.id) { %><span class="badge bg-light text-dark">you</span><% } %></td>
       <td><%= u.email %></td>
       <td>
+        <% if (u.id !== currentUser.id) { %>
         <form method="POST" action="/admin/users/<%= u.id %>/role" class="d-flex gap-1">
-          <select name="role_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="role_id" class="form-select form-select-sm" onchange="if(confirm('Change ' + <%- JSON.stringify(u.full_name) %> + '\'s role to ' + this.options[this.selectedIndex].text + '?')) this.form.submit(); else this.value='<%= u.role_id %>';">
             <% roles.forEach(function(r){ %>
               <option value="<%= r.id %>" title="<%= roleDescriptions[r.name] || '' %>" <%= u.role_id===r.id?'selected':'' %>><%= r.name %></option>
             <% }) %>
           </select>
         </form>
+        <% } else { %>
+        <span class="text-muted small">
+          <%= (roles.find(function(r){return r.id===u.role_id;})||{}).name %>
+          — ask another admin to change your own role
+        </span>
+        <% } %>
       </td>
       <td><span class="badge bg-<%= u.status==='active'?'success':'secondary' %>"><%= u.status %></span></td>
       <td>

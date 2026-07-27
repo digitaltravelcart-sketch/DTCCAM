@@ -44,6 +44,10 @@ router.post("/users/:id/toggle-status", (req, res) => {
 });
 
 router.post("/users/:id/role", (req, res) => {
+  if (Number(req.params.id) === req.session.userId) {
+    req.session.flashError = "You cannot change your own role — ask another Super Admin or Director to do it.";
+    return res.redirect("/admin/users");
+  }
   store.update("users", req.params.id, { role_id: Number(req.body.role_id) });
   req.session.flashSuccess = "Role updated.";
   res.redirect("/admin/users");
