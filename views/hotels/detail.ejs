@@ -1,8 +1,18 @@
 <%- include('../partials/header', {title: hotel.name}) %>
 <% const canEdit = ['Super Admin','Director','Contracting Team','Product Team'].includes(currentRole); %>
+<% const canDelete = currentRole === 'Super Admin'; %>
 
-<h4 class="mb-1"><%= hotel.name %></h4>
-<p class="text-muted"><%= hotel.city %>, <%= hotel.country %> · <%= hotel.category_star %>★ · <%= hotel.contact_person||'' %> <%= hotel.phone||'' %></p>
+<div class="d-flex justify-content-between align-items-start">
+  <div>
+    <h4 class="mb-1"><%= hotel.name %></h4>
+    <p class="text-muted"><%= hotel.city %>, <%= hotel.country %> · <%= hotel.category_star %>★ · <%= hotel.contact_person||'' %> <%= hotel.phone||'' %></p>
+  </div>
+  <% if (canDelete) { %>
+  <form method="POST" action="/hotels/<%= hotel.id %>/delete" onsubmit="return confirm('Delete this hotel and all its contracts, seasons, and rates? This cannot be undone.');">
+    <button class="btn btn-sm btn-outline-danger">Delete Hotel</button>
+  </form>
+  <% } %>
+</div>
 
 <div class="row g-3">
   <div class="col-md-4">
@@ -10,15 +20,21 @@
       <h6 class="fw-bold">Room Categories</h6>
       <ul class="list-group list-group-flush mb-2">
         <% roomCategories.forEach(function(rc){ %>
-          <li class="list-group-item px-0"><%= rc.name %> <span class="text-muted small">(max <%= rc.max_occupancy %> pax)</span></li>
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <%= rc.name %>
+            <% if (canDelete) { %>
+            <form method="POST" action="/hotels/<%= hotel.id %>/room-categories/<%= rc.id %>/delete" onsubmit="return confirm('Delete room category \'<%= rc.name %>\'?');">
+              <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+            </form>
+            <% } %>
+          </li>
         <% }) %>
         <% if (roomCategories.length===0) { %><li class="list-group-item px-0 text-muted small">None yet.</li><% } %>
       </ul>
       <% if (canEdit) { %>
       <form method="POST" action="/hotels/<%= hotel.id %>/room-categories/new" class="row g-1">
-        <div class="col-7"><input class="form-control form-control-sm" name="name" placeholder="e.g. Deluxe" required></div>
-        <div class="col-3"><input class="form-control form-control-sm" type="number" name="max_occupancy" placeholder="Max pax" value="3"></div>
-        <div class="col-2"><button class="btn btn-sm btn-outline-primary w-100">+</button></div>
+        <div class="col-9"><input class="form-control form-control-sm" name="name" placeholder="e.g. Deluxe" required></div>
+        <div class="col-3"><button class="btn btn-sm btn-outline-primary w-100">+</button></div>
       </form>
       <% } %>
     </div>
@@ -46,8 +62,17 @@
 
       <% contracts.forEach(function(c){ %>
         <div class="border rounded p-2 mb-3">
-          <div class="fw-bold">Contract <span class="text-muted small">(<%= c.valid_from %> to <%= c.valid_to %>)</span></div>
-          <div class="small text-muted mb-2"><%= c.payment_terms || '' %></div>
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-bold">Contract <span class="text-muted small">(<%= c.valid_from %> to <%= c.valid_to %>)</span></div>
+              <div class="small text-muted mb-2"><%= c.payment_terms || '' %></div>
+            </div>
+            <% if (canDelete) { %>
+            <form method="POST" action="/hotels/<%= hotel.id %>/contracts/<%= c.id %>/delete" onsubmit="return confirm('Delete this contract and all its seasons and rates?');">
+              <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+            </form>
+            <% } %>
+          </div>
 
           <% if (canEdit) { %>
           <form method="POST" action="/hotels/contracts/<%= c.id %>/seasons/new" class="row g-1 mb-2">
@@ -60,9 +85,16 @@
 
           <% (seasonsByContract[c.id]||[]).forEach(function(s){ %>
             <div class="ms-2 mb-2 border-start ps-2">
-              <div class="fw-semibold small"><%= s.season_name %> <span class="text-muted"><%= s.date_from %> → <%= s.date_to %></span></div>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="fw-semibold small"><%= s.season_name %> <span class="text-muted"><%= s.date_from %> → <%= s.date_to %></span></div>
+                <% if (canDelete) { %>
+                <form method="POST" action="/hotels/<%= hotel.id %>/seasons/<%= s.id %>/delete" onsubmit="return confirm('Delete this season and all its rates?');">
+                  <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+                </form>
+                <% } %>
+              </div>
               <table class="table table-sm mb-1">
-                <thead><tr><th>Room</th><th>Meal</th><th>SGL</th><th>DBL</th><th>Extra Adult</th><th>CNB</th><th>CWB</th></tr></thead>
+                <thead><tr><th>Room</th><th>Meal</th><th>SGL</th><th>DBL</th><th>Extra Adult</th><th>CNB</th><th>CWB</th><% if (canDelete) { %><th></th><% } %></tr></thead>
                 <tbody>
                 <% (ratesBySeason[s.id]||[]).forEach(function(r){ %>
                   <tr>
@@ -73,6 +105,13 @@
                     <td>₹<%= r.extra_adult_rate %></td>
                     <td>₹<%= r.extra_child_nb_rate %></td>
                     <td>₹<%= r.extra_child_wb_rate %></td>
+                    <% if (canDelete) { %>
+                    <td>
+                      <form method="POST" action="/hotels/<%= hotel.id %>/rates/<%= r.id %>/delete" onsubmit="return confirm('Delete this rate?');">
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+                      </form>
+                    </td>
+                    <% } %>
                   </tr>
                 <% }) %>
                 </tbody>

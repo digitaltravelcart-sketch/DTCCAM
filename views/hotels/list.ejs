@@ -7,9 +7,13 @@
   <% } %>
 </div>
 
-<div class="row g-3">
+<div class="mb-3">
+  <input type="text" class="form-control" id="hotelSearch" placeholder="Search hotels by name...">
+</div>
+
+<div class="row g-3" id="hotelList">
   <% hotels.forEach(function(h){ %>
-  <div class="col-md-4">
+  <div class="col-md-4 hotel-card" data-name="<%= h.name.toLowerCase() %>">
     <div class="card p-3 h-100">
       <h6 class="fw-bold mb-1"><a href="/hotels/<%= h.id %>"><%= h.name %></a></h6>
       <p class="text-muted small mb-1"><%= h.city %>, <%= h.country %> · <%= h.category_star %>★</p>
@@ -21,5 +25,24 @@
     <p class="text-muted">No hotels yet. Add one to start building contracted rates.</p>
   <% } %>
 </div>
+<p class="text-muted small d-none" id="noResults">No hotels match your search.</p>
+
+<script>
+  (function () {
+    var input = document.getElementById('hotelSearch');
+    var cards = document.querySelectorAll('.hotel-card');
+    var noResults = document.getElementById('noResults');
+    input.addEventListener('input', function () {
+      var q = input.value.trim().toLowerCase();
+      var visibleCount = 0;
+      cards.forEach(function (card) {
+        var match = card.dataset.name.indexOf(q) !== -1;
+        card.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+      noResults.classList.toggle('d-none', visibleCount > 0);
+    });
+  })();
+</script>
 
 <%- include('../partials/footer') %>

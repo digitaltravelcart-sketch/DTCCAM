@@ -1,0 +1,41 @@
+<%- include('../partials/header', {title: 'Activities'}) %>
+<% const canEdit = ['Super Admin','Director','Contracting Team','Product Team'].includes(currentRole); %>
+<% const canDelete = currentRole === 'Super Admin'; %>
+
+<h4 class="section-title mb-3">Activities</h4>
+
+<div class="card p-3">
+  <table class="table table-sm">
+    <thead><tr><th>Activity</th><th>City</th><th>Price (₹)</th><% if (canDelete) { %><th></th><% } %></tr></thead>
+    <tbody>
+    <% activities.forEach(function(a){ %>
+      <tr>
+        <td class="fw-semibold"><%= a.name %></td>
+        <td><%= a.city %></td>
+        <td>₹<%= Number(a.price).toLocaleString('en-IN') %></td>
+        <% if (canDelete) { %>
+        <td>
+          <form method="POST" action="/activities/<%= a.id %>/delete" onsubmit="return confirm('Delete this activity?');">
+            <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+          </form>
+        </td>
+        <% } %>
+      </tr>
+    <% }) %>
+    <% if (activities.length===0) { %>
+      <tr><td colspan="4" class="text-muted text-center">No activities yet. Add one below.</td></tr>
+    <% } %>
+    </tbody>
+  </table>
+
+  <% if (canEdit) { %>
+  <form method="POST" action="/activities/new" class="row g-2 mt-2">
+    <div class="col-md-5"><input class="form-control form-control-sm" name="name" placeholder="Activity name (e.g. Scuba Diving)" required></div>
+    <div class="col-md-3"><input class="form-control form-control-sm" name="city" placeholder="City (e.g. Goa)" required></div>
+    <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="price" placeholder="Price ₹" required></div>
+    <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">+ Add Activity</button></div>
+  </form>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

@@ -76,6 +76,8 @@ async function main() {
   app.use("/", requireLogin, require("./routes/dashboard"));
   app.use("/leads", requireLogin, require("./routes/leads"));
   app.use("/hotels", requireLogin, require("./routes/hotels"));
+  app.use("/transport", requireLogin, require("./routes/transport"));
+  app.use("/activities", requireLogin, require("./routes/activities"));
   app.use("/quotations", requireLogin, require("./routes/quotations"));
   app.use("/bookings", requireLogin, require("./routes/bookings"));
   app.use("/admin", requireLogin, require("./routes/admin"));

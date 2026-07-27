@@ -1,0 +1,41 @@
+<%- include('../partials/header', {title: 'Transport Rates'}) %>
+<% const canEdit = ['Super Admin','Director','Contracting Team','Product Team'].includes(currentRole); %>
+<% const canDelete = currentRole === 'Super Admin'; %>
+
+<h4 class="section-title mb-3">Transport Rates</h4>
+
+<div class="card p-3">
+  <table class="table table-sm">
+    <thead><tr><th>Route Name</th><th>Itinerary</th><th>Price (₹)</th><% if (canDelete) { %><th></th><% } %></tr></thead>
+    <tbody>
+    <% routes.forEach(function(r){ %>
+      <tr>
+        <td class="fw-semibold"><%= r.route_name %></td>
+        <td><%= r.itinerary %></td>
+        <td>₹<%= Number(r.price).toLocaleString('en-IN') %></td>
+        <% if (canDelete) { %>
+        <td>
+          <form method="POST" action="/transport/<%= r.id %>/delete" onsubmit="return confirm('Delete this route?');">
+            <button class="btn btn-sm btn-outline-danger py-0 px-1">×</button>
+          </form>
+        </td>
+        <% } %>
+      </tr>
+    <% }) %>
+    <% if (routes.length===0) { %>
+      <tr><td colspan="4" class="text-muted text-center">No transport routes yet. Add one below.</td></tr>
+    <% } %>
+    </tbody>
+  </table>
+
+  <% if (canEdit) { %>
+  <form method="POST" action="/transport/new" class="row g-2 mt-2">
+    <div class="col-md-3"><input class="form-control form-control-sm" name="route_name" placeholder="Route name (e.g. Airport Transfer)" required></div>
+    <div class="col-md-5"><input class="form-control form-control-sm" name="itinerary" placeholder="Itinerary (e.g. Airport - Hotel - Airport, Sedan)" required></div>
+    <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="price" placeholder="Price ₹" required></div>
+    <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">+ Add Route</button></div>
+  </form>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

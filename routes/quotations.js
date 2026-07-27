@@ -62,12 +62,18 @@ router.get("/:id", (req, res) => {
   const items = store.where("quotation_items", (i) => i.quotation_id === quotation.id);
   const hotels = store.all("hotels");
   const allRoomCategories = store.all("room_categories");
+  const transportRoutes = store.all("transport_routes");
+  const activities = store.all("activities");
+  const cities = [...new Set(activities.map((a) => a.city))].sort();
   res.render("quotations/detail", {
     title: `Quotation #${quotation.id}`,
     quotation,
     items,
     hotels,
     allRoomCategories,
+    transportRoutes,
+    activities,
+    cities,
     store,
     canEdit: ["Super Admin", "Director", "Sales Manager", "Sales Executive"].includes(res.locals.currentRole),
   });
@@ -97,6 +103,48 @@ router.post("/:id/add-hotel-item", requireRole(...SALES_ROLES), (req, res) => {
     unit_cost: result.perNight,
     quantity: Number(b.nights),
     total_cost: result.total,
+  });
+  recalc(quotation);
+  res.redirect(`/quotations/${quotation.id}`);
+});
+
+router.post("/:id/add-transport-item", requireRole(...SALES_ROLES), (req, res) => {
+  const quotation = store.find("quotations", req.params.id);
+  const b = req.body;
+  const route = store.find("transport_routes", b.transport_route_id);
+  if (!route) {
+    req.session.flashError = "Select a transport route.";
+    return res.redirect(`/quotations/${quotation.id}`);
+  }
+  const quantity = Number(b.quantity || 1);
+  store.insert("quotation_items", {
+    quotation_id: quotation.id,
+    component_type: "transport",
+    description: `${route.route_name} — ${route.itinerary}`,
+    unit_cost: route.price,
+    quantity,
+    total_cost: route.price * quantity,
+  });
+  recalc(quotation);
+  res.redirect(`/quotations/${quotation.id}`);
+});
+
+router.post("/:id/add-activity-item", requireRole(...SALES_ROLES), (req, res) => {
+  const quotation = store.find("quotations", req.params.id);
+  const b = req.body;
+  const activity = store.find("activities", b.activity_id);
+  if (!activity) {
+    req.session.flashError = "Select an activity.";
+    return res.redirect(`/quotations/${quotation.id}`);
+  }
+  const quantity = Number(b.quantity || 1);
+  store.insert("quotation_items", {
+    quotation_id: quotation.id,
+    component_type: "activity",
+    description: `${activity.name} (${activity.city})`,
+    unit_cost: activity.price,
+    quantity,
+    total_cost: activity.price * quantity,
   });
   recalc(quotation);
   res.redirect(`/quotations/${quotation.id}`);

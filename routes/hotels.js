@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const store = require("../lib/store");
-const { requireRole, CONTRACTING_ROLES } = require("../lib/auth");
+const { requireRole, CONTRACTING_ROLES, SUPER_ADMIN_ONLY } = require("../lib/auth");
 
 router.get("/", (req, res) => {
   const hotels = store.all("hotels").slice().reverse();
@@ -56,7 +56,6 @@ router.post("/:id/room-categories/new", requireRole(...CONTRACTING_ROLES), (req,
   store.insert("room_categories", {
     hotel_id: Number(req.params.id),
     name: req.body.name,
-    max_occupancy: Number(req.body.max_occupancy || 3),
   });
   res.redirect(`/hotels/${req.params.id}`);
 });
@@ -101,6 +100,51 @@ router.post("/seasons/:seasonId/rates/new", requireRole(...CONTRACTING_ROLES), (
     extra_child_wb_rate: Number(b.extra_child_wb_rate || 0),
   });
   res.redirect(`/hotels/${contract.hotel_id}`);
+});
+
+// ---- Delete endpoints — Super Admin only, each cascades to its children ----
+
+router.post("/:id/delete", requireRole(...SUPER_ADMIN_ONLY), (req, res) => {
+  const hotelId = Number(req.params.id);
+  const contracts = store.where("hotel_contracts", (c) => c.hotel_id === hotelId);
+  contracts.forEach((c) => {
+    const seasons = store.where("hotel_contract_seasons", (s) => s.hotel_contract_id === c.id);
+    seasons.forEach((s) => {
+      store.where("hotel_rates", (r) => r.season_id === s.id).forEach((r) => store.remove("hotel_rates", r.id));
+      store.remove("hotel_contract_seasons", s.id);
+    });
+    store.remove("hotel_contracts", c.id);
+  });
+  store.where("room_categories", (r) => r.hotel_id === hotelId).forEach((r) => store.remove("room_categories", r.id));
+  store.remove("hotels", hotelId);
+  req.session.flashSuccess = "Hotel deleted.";
+  res.redirect("/hotels");
+});
+
+router.post("/:id/room-categories/:rcId/delete", requireRole(...SUPER_ADMIN_ONLY), (req, res) => {
+  store.remove("room_categories", req.params.rcId);
+  res.redirect(`/hotels/${req.params.id}`);
+});
+
+router.post("/:id/contracts/:contractId/delete", requireRole(...SUPER_ADMIN_ONLY), (req, res) => {
+  const seasons = store.where("hotel_contract_seasons", (s) => s.hotel_contract_id === Number(req.params.contractId));
+  seasons.forEach((s) => {
+    store.where("hotel_rates", (r) => r.season_id === s.id).forEach((r) => store.remove("hotel_rates", r.id));
+    store.remove("hotel_contract_seasons", s.id);
+  });
+  store.remove("hotel_contracts", req.params.contractId);
+  res.redirect(`/hotels/${req.params.id}`);
+});
+
+router.post("/:id/seasons/:seasonId/delete", requireRole(...SUPER_ADMIN_ONLY), (req, res) => {
+  store.where("hotel_rates", (r) => r.season_id === Number(req.params.seasonId)).forEach((r) => store.remove("hotel_rates", r.id));
+  store.remove("hotel_contract_seasons", req.params.seasonId);
+  res.redirect(`/hotels/${req.params.id}`);
+});
+
+router.post("/:id/rates/:rateId/delete", requireRole(...SUPER_ADMIN_ONLY), (req, res) => {
+  store.remove("hotel_rates", req.params.rateId);
+  res.redirect(`/hotels/${req.params.id}`);
 });
 
 module.exports = router;

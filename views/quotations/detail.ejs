@@ -84,13 +84,48 @@
       <p class="text-muted small mt-2 mb-0">Looks up the contracted rate for that hotel/room/meal-plan/date automatically. If nothing is found, add the rate under Hotel Contracts first.</p>
     </div>
 
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold">Add Transport</h6>
+      <form method="POST" action="/quotations/<%= quotation.id %>/add-transport-item" class="row g-2">
+        <div class="col-md-6">
+          <select class="form-select form-select-sm" name="transport_route_id" required>
+            <option value="">Select route...</option>
+            <% transportRoutes.forEach(function(r){ %>
+              <option value="<%= r.id %>"><%= r.route_name %> — <%= r.itinerary %> (₹<%= Number(r.price).toLocaleString('en-IN') %>)</option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="quantity" placeholder="Qty" value="1" min="1"></div>
+        <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">+ Add</button></div>
+      </form>
+      <% if (transportRoutes.length===0) { %><p class="text-muted small mt-2 mb-0">No transport routes set up yet — add one under <a href="/transport">Transport</a>.</p><% } %>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold">Add Activity</h6>
+      <form method="POST" action="/quotations/<%= quotation.id %>/add-activity-item" class="row g-2">
+        <div class="col-md-3">
+          <select class="form-select form-select-sm" id="activityCitySelect">
+            <option value="">Select city...</option>
+            <% cities.forEach(function(c){ %><option value="<%= c %>"><%= c %></option><% }) %>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select form-select-sm" name="activity_id" id="activitySelect" required>
+            <option value="">Select city first...</option>
+          </select>
+        </div>
+        <div class="col-md-2"><input class="form-control form-control-sm" type="number" name="quantity" placeholder="Qty" value="1" min="1"></div>
+        <div class="col-md-3"><button class="btn btn-sm btn-primary w-100">+ Add Activity</button></div>
+      </form>
+      <% if (activities.length===0) { %><p class="text-muted small mt-2 mb-0">No activities set up yet — add one under <a href="/activities">Activities</a>.</p><% } %>
+    </div>
+
     <div class="card p-3">
-      <h6 class="fw-bold">Add Manual Line Item (transport / activity / flight / visa / insurance / other)</h6>
+      <h6 class="fw-bold">Add Manual Line Item (flight / visa / insurance / other)</h6>
       <form method="POST" action="/quotations/<%= quotation.id %>/add-manual-item" class="row g-2">
         <div class="col-md-2">
           <select class="form-select form-select-sm" name="component_type">
-            <option value="transport">Transport</option>
-            <option value="activity">Activity</option>
             <option value="flight">Flight</option>
             <option value="visa">Visa</option>
             <option value="insurance">Insurance</option>
@@ -158,6 +193,26 @@
     });
   }
   if (hotelSelect) hotelSelect.addEventListener('change', refreshRooms);
+
+  // activities are city-mapped, so the activity dropdown only shows
+  // activities in the city picked in the city dropdown next to it
+  const ACTIVITY_DATA = <%- JSON.stringify(activities) %>;
+  const activityCitySelect = document.getElementById('activityCitySelect');
+  const activitySelect = document.getElementById('activitySelect');
+  function refreshActivities() {
+    const city = activityCitySelect.value;
+    if (!city) {
+      activitySelect.innerHTML = '<option value="">Select city first...</option>';
+      return;
+    }
+    activitySelect.innerHTML = '<option value="">Select activity...</option>';
+    ACTIVITY_DATA.filter(function(a){ return a.city === city; }).forEach(function(a){
+      const opt = document.createElement('option');
+      opt.value = a.id; opt.textContent = a.name + ' (₹' + Number(a.price).toLocaleString('en-IN') + ')';
+      activitySelect.appendChild(opt);
+    });
+  }
+  if (activityCitySelect) activityCitySelect.addEventListener('change', refreshActivities);
 </script>
 
 <%- include('../partials/footer') %>
